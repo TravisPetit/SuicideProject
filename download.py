@@ -4,9 +4,14 @@ VERBOSE = True
 DESTINATION = "./files"
 os.mkdir(DESTINATION)
 
+LEN = 163536
+
 data = open("files.txt", "r")
 
+i = 0
 for line in data:
+    i += 1
+
     words = line.split(" ")
     url = words[-1].strip()
 
@@ -18,7 +23,7 @@ for line in data:
     filename = filename[-1].strip()
     filename = filename[0:-4] #remove .zip
 
-    if VERBOSE:
-        print(filename)
+    if VERBOSE and (i%10 == 0):
+        print( str(i) + " / " + str(LEN) )
 
     shutil.move("./" + filename, DESTINATION)
