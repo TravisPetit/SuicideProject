@@ -2,11 +2,12 @@ import requests, zipfile, io, shutil, os
 
 VERBOSE = True
 DESTINATION = "./files"
-os.mkdir(DESTINATION)
-
 LEN = 163536
 
+
+os.mkdir(DESTINATION)
 data = open("files.txt", "r")
+
 
 i = 0
 for line in data:
@@ -23,7 +24,7 @@ for line in data:
     filename = filename[-1].strip()
     filename = filename[0:-4] #remove .zip
 
+    shutil.move("./" + filename, DESTINATION)
+
     if VERBOSE and (i%10 == 0):
         print( str(i) + " / " + str(LEN) )
-
-    shutil.move("./" + filename, DESTINATION)
