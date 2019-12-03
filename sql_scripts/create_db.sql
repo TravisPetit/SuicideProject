@@ -19,9 +19,9 @@ CREATE TABLE Geo (
     id SERIAL PRIMARY KEY,
     "type" INTEGER NOT NULL,
     fullName VARCHAR(255) NOT NULL,
-    countryCode CHAR(2) NOT NULL,
-    adm1Code CHAR(4) NOT NULL,
-    adm2Code CHAR(5) NULL,
+    countryCode CHAR(255) NOT NULL, -- should be 2
+    adm1Code CHAR(255) NOT NULL, -- should be 4
+    adm2Code CHAR(255) NULL, -- should be 5
     coordinates GEOGRAPHY(POINT) NOT NULL,
     featureID VARCHAR(255) NOT NULL
 );
@@ -33,7 +33,7 @@ CREATE TABLE Actor (
     id SERIAL PRIMARY KEY,
     code VARCHAR(255) NOT NULL,
     "name" VARCHAR(255) NOT NULL,
-    countryCode CHAR(3) NULL,
+    countryCode CHAR(255) NULL, -- should be 3
     knownGroupCode VARCHAR(255) NULL,
     ethnicCode VARCHAR(255) NULL,
     religion1Code VARCHAR(255) NULL,
