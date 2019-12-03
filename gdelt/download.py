@@ -1,4 +1,5 @@
 import requests, zipfile, io, shutil, os
+from datetime import datetime
 
 VERBOSE = True
 DESTINATION = "./files"
@@ -7,7 +8,7 @@ LEN = 163536
 os.mkdir(DESTINATION)
 data = open("files.txt", "r")
 
-i = 0
+i = -1
 for line in data:
     i += 1
 
@@ -24,7 +25,7 @@ for line in data:
         z = zipfile.ZipFile(io.BytesIO(req.content))
         z.extractall()
 
-        shutil.move("./" + filename, DESTINATION)
+        shutil.move("./" + filename, DESTINATION + "/" + str(i) + ".csv")
 
     except Exception as e:
         mssg = "Skipping file: {}, iteration: {}\n".format(filename, i)
@@ -38,7 +39,8 @@ for line in data:
         f.write(str(i)+",")
         f.close()
 
-    if VERBOSE and (i%10 == 0):
-        print(str(i) + " / " + str(LEN))
+    if VERBOSE and (i%10000 == 0):
+        time = str(datetime.now().time().replace(microsecond=0))
+        print(time + "   " + str(i) + " / " + str(LEN))
 
 data.close()
