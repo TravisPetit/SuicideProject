@@ -1,5 +1,6 @@
 import psycopg2
 import csv
+import datetime
 
 conn = psycopg2.connect(
 	host="localhost",
@@ -80,6 +81,146 @@ cursor.execute("SET search_path TO suicide_schema")
 #64 BM. Giggerish
 #65 BN. Gibberigh
 #66 BO. Gibberish
+#61 BJ. Gibberish
+#62 BK. Gibberish
+#63 BL. Gibberish
+#64 BM. Giggerish
+#65 BN. Gibberigh
+#66 BO. Gibberish
+
+def db_int(value):
+    if value == '':
+        return None
+    else:
+        try:
+            return int(value)
+        except ValueError:
+            return None
+
+def db_float(value):
+    if value == '':
+        return None
+    else:
+        try:
+            return float(value)
+        except ValueError:
+            return None
+
+def db_str(value):
+    if value == '':
+        return None
+    else:
+        value
+
+def db_bool(value):
+    if value == 1:
+        return True
+    elif value == 0:
+        return False
+    else:
+        return None
+
+def db_datetime(value, format):
+    if value == '':
+        return None
+    else:
+        try:
+            return datetime.datetime.strptime(value, '%Y%m%d')
+        except ValueError:
+            return None
+
+class GDELTRow:
+    def __init__(self, row):
+        self.GlobalEventID = db_int(row[0])
+        self.Day = row[1]
+        self.Actor1Code = db_str(row[5])
+        self.Actor1Name = db_str(row[6])
+        self.Actor1CountryCode = db_str(row[7])
+        self.Actor1KnownGroupCode = db_str(row[8])
+        self.Actor1EthnicCode = db_str(row[9])
+        self.Actor1Religion1Code = db_str(row[10])
+        self.Actor1Religion2Code = db_str(row[11])
+        self.Actor1Type1Code = db_str(row[12])
+        self.Actor1Type2Code = db_str(row[13])
+        self.Actor1Type3Code = db_str(row[14])
+        self.Actor2Code = db_str(row[15])
+        self.Actor2Name = db_str(row[16])
+        self.Actor2CountryCode = db_str(row[17])
+        self.Actor2KnownGroupCode = db_str(row[18])
+        self.Actor2EthnicCode = db_str(row[19])
+        self.Actor2Religion1Code = db_str(row[20])
+        self.Actor2Religion2Code = db_str(row[21])
+        self.Actor2Type1Code = db_str(row[22])
+        self.Actor2Type2Code = db_str(row[23])
+        self.Actor2Type3Code = db_str(row[24])
+        self.IsRootEvent = db_bool(row[25])
+        self.EventCode = db_str(row[26])
+        self.EventBaseCode = db_str(row[27])
+        self.EventRootCode = db_str(row[28])
+        self.QuadClass = db_int(row[29])
+        self.GoldsteinScale = db_float(row[30])
+        self.NumMentions = db_int(row[31])
+        self.NumSources = db_int(row[32])
+        self.NumArticles = db_int(row[33])
+        self.AvgTone = db_float(row[34])
+        self.Actor1Geo_Type = db_int(row[35])
+        self.Actor1Geo_FullName = db_str(row[36])
+        self.Actor1Geo_CountryCode = db_str(row[37])
+        self.Actor1Geo_ADM1Code = db_str(row[38])
+        self.Actor1Geo_ADM2Code = db_str(row[39])
+        self.Actor1Geo_Lat = db_float(row[40])
+        self.Actor1Geo_Long = db_float(row[41])
+        self.Actor1Geo_FeatureID = db_str(row[42])
+        self.Actor2Geo_Type = db_int(row[43])
+        self.Actor2Geo_FullName = db_str(row[44])
+        self.Actor2Geo_CountryCode = db_str(row[45])
+        self.Actor2Geo_ADM1Code = db_str(row[46])
+        self.Actor2Geo_ADM2Code = db_str(row[47])
+        self.Actor2Geo_Lat = db_float(row[48])
+        self.Actor2Geo_Long = db_float(row[49])
+        self.Actor2Geo_FeatureID = db_str(row[50])
+        self.ActionGeo_Type = db_int(row[51])
+        self.ActionGeo_FullName = db_str(row[52])
+        self.ActionGeo_CountryCode = db_str(row[53])
+        self.ActionGeo_ADM1Code = db_str(row[54])
+        self.ActionGeo_ADM2Code = db_str(row[55])
+        self.ActionGeo_Lat = db_float(row[56])
+        self.ActionGeo_Long = db_float(row[57])
+        self.ActionGeo_FeatureID = db_str(row[58])
+
+def add_geo(typ, full_name, country_code, adm1_code, adm2_code,
+            lat, long, feature_id, cursor):
+    cursor.execute('INSERT INTO Geo '
+                  + '("type", fullName, countryCode, adm1Code, adm2Code, '
+                     + 'coordinates, featureID) '
+                  + 'VALUES (%i, %s, %s, %s, %s, %s, %s) '
+                  + 'ON CONFLICT idx_geo_type_fullName DO UPDATE SET typ = EXCLUDED.typ '
+                  + 'RETURNING id;'
+                  , (typ, full_name, country_code, adm1_code, adm2_code,
+                      'POINT(%f %f)' % (long, lat), feature_id))
+    return cursor.fetchone()[0]
+
+def add_geos(row, cursor):
+    (actor1_geo_id, actor2_geo_id, action_geo_id) = (None, None, None)
+    if row.Actor1Geo_Type is not None:
+        actor1_geo_id = add_geo(row.Actor1Geo_Type, row.Actor1Geo_FullName,
+                row.Actor1Geo_CountryCode, row.Actor1Geo_ADM1Code,
+                row.Actor1Geo_ADM2Code, row.Actor1Geo_Lat,
+                row.Actor1Geo_Long, row.Actor1Geo_FeatureID,
+                cursor)
+    if row.Actor2Geo_Type is not None:
+        actor2_geo_id = add_geo(row.Actor2Geo_Type, row.Actor2Geo_FullName,
+                row.Actor2Geo_CountryCode, row.Actor2Geo_ADM1Code,
+                row.Actor2Geo_ADM2Code, row.Actor2Geo_Lat,
+                row.Actor2Geo_Long, row.Actor2Geo_FeatureID,
+                cursor)
+    if row.ActionGeo_Type is not None:
+        action_geo_id = add_geo(row.ActionGeo_Type, row.ActionGeo_FullName,
+                row.ActionGeo_CountryCode, row.ActionGeo_ADM1Code,
+                row.ActionGeo_ADM2Code, row.ActionGeo_Lat,
+                row.ActionGeo_Long, row.ActionGeo_FeatureID,
+                cursor)
+    return (actor1_geo_id, actor2_geo_id, action_geo_id)
 
 ACTION_STR = 'INSERT INTO "Action" \
 (id, eventCode, eventRootCode, eventBaseCode, isRootEvent, quadClass, goldsteinScale, avgTone)\
@@ -91,13 +232,17 @@ i=0
 while(i < LEN):
     i+=1
     filename = "../gdelt/files/"  + str(i) + ".csv"
-    index = 0
     with open(filename, mode="r") as data:
         reader = csv.reader(data, delimiter ="\t")
-        for row in reader:
-            index+=1
+        for row in map(GDELTRow, reader):
             print(row)
-            s_action = "("
+            (actor1_geo_id, actor2_geo_id, action_geo_id) = add_geos(row, cursor)
+            #(actor1_id, actor2_id) = add_actors(row, cursor)
+            #action_id = add_action(row, cursor)
+            #add_event(row, 
+            #       actor1_geo_id, actor2_geo_id, action_geo_id,
+            #       actor1_id, actor2_id, action_id)
+            '''s_action = "("
             s_action += str(index)  + ","  #id
             s_action += row[26] + ","  #eventCode
             s_action += row[28] + ","  #eventRootCode
@@ -108,6 +253,6 @@ while(i < LEN):
             s_action += row[34]        #avgTone
             s_action += ")"
             cursor.execute( ACTION_STR + s_action )
-            # ...
+            # ...'''
 conn.close()
 cursor.close()

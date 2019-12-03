@@ -8,7 +8,7 @@ CREATE TABLE "Action" (
     eventCode VARCHAR(255) NOT NULL,
     eventRootCode VARCHAR(255) NOT NULL,
     eventBaseCode VARCHAR(255) NOT NULL,
-    isRootEvent INTEGER NOT NULL,
+    isRootEvent BOOLEAN NOT NULL,
     quadClass INTEGER NOT NULL,
     goldsteinScale REAL NOT NULL
 );
@@ -22,10 +22,11 @@ CREATE TABLE Geo (
     countryCode CHAR(2) NOT NULL,
     adm1Code CHAR(4) NOT NULL,
     adm2Code CHAR(5) NULL,
-    coordinates GEOGRAPHY NOT NULL,
+    coordinates GEOGRAPHY(POINT) NOT NULL,
     featureID VARCHAR(255) NOT NULL
 );
 
+CREATE UNIQUE INDEX idx_geo_type_fullName ON Geo ("type", fullName);
 CREATE INDEX idx_geo_coordinates ON Geo USING GIST (coordinates);
 
 CREATE TABLE Actor (
