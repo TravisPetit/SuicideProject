@@ -233,7 +233,7 @@ for i in range(LEN):
     with open(filename, mode="r") as data:
         reader = csv.reader(data, delimiter ="\t")
         for row in map(GDELTRow, reader):
-            print(row.__dict__)
+            #print(row.__dict__)
             (actor1_geo_id, actor2_geo_id, action_geo_id) = add_geos(row, cursor)
             #(actor1_id, actor2_id) = add_actors(row, cursor)
             #action_id = add_action(row, cursor)
