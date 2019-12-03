@@ -193,8 +193,8 @@ def add_geo(typ, full_name, country_code, adm1_code, adm2_code,
     cursor.execute('INSERT INTO Geo '
                   + '("type", fullName, countryCode, adm1Code, adm2Code, '
                      + 'coordinates, featureID) '
-                  + 'VALUES (%i, %s, %s, %s, %s, %s, %s) '
-                  + 'ON CONFLICT idx_geo_type_fullName DO UPDATE SET typ = EXCLUDED.typ '
+                  + 'VALUES (%s, %s, %s, %s, %s, %s, %s) '
+                  + 'ON CONFLICT (idx_geo_type_fullName) DO UPDATE SET typ = EXCLUDED.typ '
                   + 'RETURNING id;'
                   , (typ, full_name, country_code, adm1_code, adm2_code,
                       'POINT(%f %f)' % (long, lat), feature_id))
