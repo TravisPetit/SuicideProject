@@ -202,19 +202,19 @@ def add_geo(typ, full_name, country_code, adm1_code, adm2_code,
 
 def add_geos(row, cursor):
     (actor1_geo_id, actor2_geo_id, action_geo_id) = (None, None, None)
-    if row.Actor1Geo_Type is not None:
+    if row.Actor1Geo_Type is not None and row.Actor1Geo_Type != 0:
         actor1_geo_id = add_geo(row.Actor1Geo_Type, row.Actor1Geo_FullName,
                 row.Actor1Geo_CountryCode, row.Actor1Geo_ADM1Code,
                 row.Actor1Geo_ADM2Code, row.Actor1Geo_Lat,
                 row.Actor1Geo_Long, row.Actor1Geo_FeatureID,
                 cursor)
-    if row.Actor2Geo_Type is not None:
+    if row.Actor2Geo_Type is not None and row.Actor2Geo_Type != 0:
         actor2_geo_id = add_geo(row.Actor2Geo_Type, row.Actor2Geo_FullName,
                 row.Actor2Geo_CountryCode, row.Actor2Geo_ADM1Code,
                 row.Actor2Geo_ADM2Code, row.Actor2Geo_Lat,
                 row.Actor2Geo_Long, row.Actor2Geo_FeatureID,
                 cursor)
-    if row.ActionGeo_Type is not None:
+    if row.ActionGeo_Type is not None and row.ActionGeo_Type != 0:
         action_geo_id = add_geo(row.ActionGeo_Type, row.ActionGeo_FullName,
                 row.ActionGeo_CountryCode, row.ActionGeo_ADM1Code,
                 row.ActionGeo_ADM2Code, row.ActionGeo_Lat,
