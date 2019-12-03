@@ -132,7 +132,7 @@ def db_datetime(value, format):
 class GDELTRow:
     def __init__(self, row):
         self.GlobalEventID = db_int(row[0])
-        self.Day = row[1]
+        self.Day = db_datetime(row[1])
         self.Actor1Code = db_str(row[5])
         self.Actor1Name = db_str(row[6])
         self.Actor1CountryCode = db_str(row[7])
@@ -201,7 +201,7 @@ def add_geo(typ, full_name, country_code, adm1_code, adm2_code,
     return cursor.fetchone()[0]
 
 def add_geos(row, cursor):
-    (actor1_geo_id, actor2_geo_id, action_geo_id) = (None, None, None)
+    actor1_geo_id, actor2_geo_id, action_geo_id = None, None, None
     if row.Actor1Geo_Type is not None and row.Actor1Geo_Type != 0:
         actor1_geo_id = add_geo(row.Actor1Geo_Type, row.Actor1Geo_FullName,
                 row.Actor1Geo_CountryCode, row.Actor1Geo_ADM1Code,
@@ -220,13 +220,41 @@ def add_geos(row, cursor):
                 row.ActionGeo_ADM2Code, row.ActionGeo_Lat,
                 row.ActionGeo_Long, row.ActionGeo_FeatureID,
                 cursor)
-    return (actor1_geo_id, actor2_geo_id, action_geo_id)
+    return actor1_geo_id, actor2_geo_id, action_geo_id
 
-ACTION_STR = 'INSERT INTO "Action" \
-(id, eventCode, eventRootCode, eventBaseCode, isRootEvent, quadClass, goldsteinScale, avgTone)\
-VALUES '
+def add_actor(code, name, country_code, known_group_code,
+        ethnic_code, religion1_code, religion2_code, 
+        type1_code, type2_code, type3_code, cursor):
+    cursor.execute('INSERT INTO Actor '
+                  + '(code, "name", countryCode, knownGroupCode, ethnicCode, '
+                     + 'religion1Code, religion2Code, type1Code, type2Code, type3Code) '
+                  + 'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) '
+                  + 'ON CONFLICT (code, "name") DO UPDATE SET code = EXCLUDED.code '
+                  + 'RETURNING id;'
+                  , (code, name, country_code, known_group_code,
+                        ethnic_code, religion1_code, religion2_code, 
+                        type1_code, type2_code, type3_code, cursor))
+    return cursor.fetchone()[0]
 
-
+def add_actors(row, cursor):
+    actor1_id, actor2_id = None, None
+    if row.Actor1Code is not None:
+        actor1_id = add_actor(row.Actor1Code, row.Actor1Name,
+                row.Actor1CountryCode, row.Actor1KnownGroupCode,
+                row.Actor1EthnicCode, row.Actor1Religion1Code,
+                row.Actor1Religion2Code, row.Actor1Type1Code,
+                row.Actor1Type2Code, row.Actor1Type3Code,
+                cursor)
+        
+    if row.Actor2Code is not None:
+        actor2_id = add_actor(row.Actor2Code, row.Actor2Name,
+                row.Actor2CountryCode, row.Actor2KnownGroupCode,
+                row.Actor2EthnicCode, row.Actor2Religion1Code,
+                row.Actor2Religion2Code, row.Actor2Type1Code,
+                row.Actor2Type2Code, row.Actor2Type3Code,
+                cursor)
+    return actor1_id, actor2_id
+        
 LEN = 163536
 for i in range(LEN):
     filename = "../gdelt/files/"  + str(i) + ".csv"
@@ -234,8 +262,8 @@ for i in range(LEN):
         reader = csv.reader(data, delimiter ="\t")
         for row in map(GDELTRow, reader):
             #print(row.__dict__)
-            (actor1_geo_id, actor2_geo_id, action_geo_id) = add_geos(row, cursor)
-            #(actor1_id, actor2_id) = add_actors(row, cursor)
+            actor1_geo_id, actor2_geo_id, action_geo_id = add_geos(row, cursor)
+            actor1_id, actor2_id = add_actors(row, cursor)
             #action_id = add_action(row, cursor)
             #add_event(row, 
             #       actor1_geo_id, actor2_geo_id, action_geo_id,
