@@ -104,6 +104,8 @@ def db_float(value):
         try:
             return float(value)
         except ValueError:
+            print('badly formatted float:', value)
+            exit()
             return None
 
 def db_str(value):
