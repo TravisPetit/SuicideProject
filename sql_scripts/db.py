@@ -254,7 +254,26 @@ def add_actors(row, cursor):
                 row.Actor2Type2Code, row.Actor2Type3Code,
                 cursor)
     return actor1_id, actor2_id
-        
+
+def add_action(row, cursor):
+    cursor.execute('INSERT INTO "Action" '
+                  + '(eventCode, eventRootCode, eventBaseCode, isRootEvent, quadClass, goldsteinScale) '
+                  + 'VALUES (%s, %s, %s, %s, %s, %s) '
+                  + 'ON CONFLICT (eventRootCode, eventBaseCode, eventCode) DO UPDATE SET goldsteinScale = EXCLUDED.goldsteinScale '
+                  + 'RETURNING id;'
+                  , (row.EventCode, row.EventRootCode, row.EventBaseCode, row.IsRootEvent, row.QuadClass, row.GoldsteinScale))
+    return cursor.fetchone()[0]
+
+def add_event(row, cursor, 
+        actor1_geo_id, actor2_geo_id, action_geo_id,
+        actor1_id, actor2_id, action_id):
+    cursor.execute('INSERT INTO "Event" '
+                  + '(globalEventID, dateOccurred, actionID, actor1ID, actor2ID, actor1GeoID, actor2GeoID, '
+                      + 'geoID, avgTone, numMentions, numSources, numArticles)'
+                  + 'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);'
+                  , (row.GlobalEventID, row.Day, action_id, actor1_id, actor2_id, actor1_geo_id, actor2_geo_id,
+                        row.AvgTone, row.NumMentions, row.NumSOurces, row.NumArticles))
+
 LEN = 163536
 for i in range(LEN):
     filename = "../gdelt/files/"  + str(i) + ".csv"
@@ -264,21 +283,9 @@ for i in range(LEN):
             #print(row.__dict__)
             actor1_geo_id, actor2_geo_id, action_geo_id = add_geos(row, cursor)
             actor1_id, actor2_id = add_actors(row, cursor)
-            #action_id = add_action(row, cursor)
-            #add_event(row, 
-            #       actor1_geo_id, actor2_geo_id, action_geo_id,
-            #       actor1_id, actor2_id, action_id)
-            '''s_action = "("
-            s_action += str(index)  + ","  #id
-            s_action += row[26] + ","  #eventCode
-            s_action += row[28] + ","  #eventRootCode
-            s_action += row[27] + ","  #eventBaseCode
-            s_action += row[25] + ","  #isRootEvent
-            s_action += row[29] + ","  #quadClass
-            s_action += row[30] + ","  #goldstein
-            s_action += row[34]        #avgTone
-            s_action += ")"
-            cursor.execute( ACTION_STR + s_action )
-            # ...'''
+            action_id = add_action(row, cursor)
+            add_event(row, cursor, 
+                   actor1_geo_id, actor2_geo_id, action_geo_id,
+                   actor1_id, actor2_id, action_id)
 conn.close()
 cursor.close()
