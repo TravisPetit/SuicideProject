@@ -233,7 +233,7 @@ def add_actor(code, name, country_code, known_group_code,
                   + 'RETURNING id;'
                   , (code, name, country_code, known_group_code,
                         ethnic_code, religion1_code, religion2_code, 
-                        type1_code, type2_code, type3_code, cursor))
+                        type1_code, type2_code, type3_code))
     return cursor.fetchone()[0]
 
 def add_actors(row, cursor):
