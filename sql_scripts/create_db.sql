@@ -10,11 +10,10 @@ CREATE TABLE "Action" (
     eventBaseCode VARCHAR(255) NOT NULL,
     isRootEvent INTEGER NOT NULL,
     quadClass INTEGER NOT NULL,
-    goldsteinScale REAL NOT NULL,
-    avgTone INTEGER NOT NULL
+    goldsteinScale REAL NOT NULL
 );
 
-CREATE UNIQUE INDEX idx_action_event_code ON "Action" (eventCode);
+CREATE UNIQUE INDEX idx_action_event_code ON "Action" (eventRootCode, eventBaseCode, eventCode);
 
 CREATE TABLE Geo (
     id SERIAL PRIMARY KEY,
@@ -40,13 +39,10 @@ CREATE TABLE Actor (
     religion2Code VARCHAR(255) NULL,
     type1Code VARCHAR(255) NULL,
     type2Code VARCHAR(255) NULL,
-    type3Code VARCHAR(255) NULL,
-    geoID INTEGER NULL,
-
-    FOREIGN KEY (geoID) REFERENCES Geo (id)
+    type3Code VARCHAR(255) NULL
 );
 
-CREATE UNIQUE INDEX idx_actor_code ON Actor (code);
+CREATE UNIQUE INDEX idx_actor_code ON Actor (code, "name");
 
 CREATE TABLE "Event" (
     globalEventID INTEGER PRIMARY KEY,
@@ -54,11 +50,19 @@ CREATE TABLE "Event" (
     actionID INTEGER NOT NULL,
     actor1ID INTEGER NULL,
     actor2ID INTEGER NULL,
+    actorGeo1ID INTEGER NULL,
+    actorGeo2ID INTEGER NULL,
     geoID INTEGER NULL,
+    avgTone INTEGER NOT NULL,
+    numMentions INTEGER NOT NULL,
+    numSources INTEGER NOT NULL,
+    numArticles INTEGER NOT NULL,
 
     FOREIGN KEY (actionID) REFERENCES "Action" (id),
     FOREIGN KEY (actor1ID) REFERENCES Actor (id),
     FOREIGN KEY (actor2ID) REFERENCES Actor (id),
+    FOREIGN KEY (actor1GeoID) REFERENCES Geo (id),
+    FOREIGN KEY (actor2GeoID) REFERENCES Geo (id),
     FOREIGN KEY (geoID) REFERENCES Geo (id)
 );
 
@@ -74,6 +78,14 @@ CREATE TABLE County (
 
     FOREIGN KEY (geoID) REFERENCES Geo (id),
     FOREIGN KEY (stateGeoID) REFERENCES "State" (geoID)
+);
+
+CREATE TABLE City (
+    geoID INTEGER PRIMARY KEY,
+    countyGeoID INTEGER,
+
+    FOREIGN KEY (geoID) REFERENCES Geo (id),
+    FOREIGN KEY (countyGeoID) REFERENCES County (geoID)
 );
 
 CREATE TABLE SuicideRate (
