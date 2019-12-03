@@ -18,7 +18,7 @@ CREATE UNIQUE INDEX idx_action_event_code ON "Action" (eventRootCode, eventBaseC
 CREATE TABLE Geo (
     id SERIAL PRIMARY KEY,
     "type" INTEGER NOT NULL,
-    fullName VARCHAR(255) NOT NULL,
+    fullName VARCHAR(255) NULL,
     countryCode VARCHAR(255) NULL, -- should be 2
     adm1Code VARCHAR(255) NULL, -- should be 4
     adm2Code VARCHAR(255) NULL, -- should be 5
