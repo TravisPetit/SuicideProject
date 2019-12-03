@@ -113,9 +113,9 @@ def db_str(value):
         return value
 
 def db_bool(value):
-    if value == 1:
+    if value == '1':
         return True
-    elif value == 0:
+    elif value == '0':
         return False
     else:
         return None
