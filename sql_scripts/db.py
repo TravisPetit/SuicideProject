@@ -289,5 +289,7 @@ for i in range(LEN):
             add_event(row, cursor, 
                    actor1_geo_id, actor2_geo_id, action_geo_id,
                    actor1_id, actor2_id, action_id)
+    conn.commit()
+
 conn.close()
 cursor.close()
