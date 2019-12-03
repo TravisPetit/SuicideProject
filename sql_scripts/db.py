@@ -271,7 +271,7 @@ def add_event(row, cursor,
                   + '(globalEventID, dateOccurred, actionID, actor1ID, actor2ID, actor1GeoID, actor2GeoID, '
                       + 'geoID, avgTone, numMentions, numSources, numArticles)'
                   + 'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);'
-                  , (row.GlobalEventID, row.Day, action_id, actor1_id, actor2_id, actor1_geo_id, actor2_geo_id,
+                  , (row.GlobalEventID, row.Day, action_id, actor1_id, actor2_id, action_geo_id, actor1_geo_id, actor2_geo_id,
                         row.AvgTone, row.NumMentions, row.NumSources, row.NumArticles))
 
 LEN = 163536
