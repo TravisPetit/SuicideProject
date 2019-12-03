@@ -120,7 +120,7 @@ def db_bool(value):
     else:
         return None
 
-def db_datetime(value, format):
+def db_datetime(value):
     if value == '':
         return None
     else:
