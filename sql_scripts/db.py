@@ -197,7 +197,7 @@ def add_geo(typ, full_name, country_code, adm1_code, adm2_code,
                   + 'ON CONFLICT (featureID) DO UPDATE SET "type" = EXCLUDED."type" '
                   + 'RETURNING id;'
                   , (typ, full_name, country_code, adm1_code, adm2_code,
-                      'POINT(%f %f)' % (lon, lat), feature_id))
+                      None if lon is None else f'POINT({lon} {lat})', feature_id))
     return cursor.fetchone()[0]
 
 def add_geos(row, cursor):
