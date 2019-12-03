@@ -110,7 +110,7 @@ def db_str(value):
     if value == '':
         return None
     else:
-        value
+        return value
 
 def db_bool(value):
     if value == 1:
@@ -228,14 +228,12 @@ VALUES '
 
 
 LEN = 163536
-i=0
-while(i < LEN):
-    i+=1
+for i in range(LEN):
     filename = "../gdelt/files/"  + str(i) + ".csv"
     with open(filename, mode="r") as data:
         reader = csv.reader(data, delimiter ="\t")
         for row in map(GDELTRow, reader):
-            print(row)
+            print(row.__dict__)
             (actor1_geo_id, actor2_geo_id, action_geo_id) = add_geos(row, cursor)
             #(actor1_id, actor2_id) = add_actors(row, cursor)
             #action_id = add_action(row, cursor)
