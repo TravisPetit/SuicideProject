@@ -26,7 +26,7 @@ CREATE TABLE Geo (
     featureID VARCHAR(255) NOT NULL
 );
 
-CREATE UNIQUE INDEX idx_geo_type_fullName ON Geo ("type", fullName);
+CREATE UNIQUE INDEX idx_geo_feature_id ON Geo (featureID);
 CREATE INDEX idx_geo_coordinates ON Geo USING GIST (coordinates);
 
 CREATE TABLE Actor (

@@ -194,7 +194,7 @@ def add_geo(typ, full_name, country_code, adm1_code, adm2_code,
                   + '("type", fullName, countryCode, adm1Code, adm2Code, '
                      + 'coordinates, featureID) '
                   + 'VALUES (%s, %s, %s, %s, %s, %s, %s) '
-                  + 'ON CONFLICT ("type", fullName) DO UPDATE SET "type" = EXCLUDED."type" '
+                  + 'ON CONFLICT (featureID) DO UPDATE SET "type" = EXCLUDED."type" '
                   + 'RETURNING id;'
                   , (typ, full_name, country_code, adm1_code, adm2_code,
                       'POINT(%f %f)' % (lon, lat), feature_id))
