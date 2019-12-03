@@ -189,15 +189,15 @@ class GDELTRow:
         self.ActionGeo_FeatureID = db_str(row[58])
 
 def add_geo(typ, full_name, country_code, adm1_code, adm2_code,
-            lat, long, feature_id, cursor):
+            lat, lon, feature_id, cursor):
     cursor.execute('INSERT INTO Geo '
                   + '("type", fullName, countryCode, adm1Code, adm2Code, '
                      + 'coordinates, featureID) '
                   + 'VALUES (%s, %s, %s, %s, %s, %s, %s) '
-                  + 'ON CONFLICT (idx_geo_type_fullName) DO UPDATE SET typ = EXCLUDED.typ '
+                  + 'ON CONFLICT ("type", fullName) DO UPDATE SET "type" = EXCLUDED."type" '
                   + 'RETURNING id;'
                   , (typ, full_name, country_code, adm1_code, adm2_code,
-                      'POINT(%f %f)' % (long, lat), feature_id))
+                      'POINT(%f %f)' % (lon, lat), feature_id))
     return cursor.fetchone()[0]
 
 def add_geos(row, cursor):
