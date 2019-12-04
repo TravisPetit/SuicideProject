@@ -278,8 +278,6 @@ def add_event(row, cursor,
 
 LEN = 163536
 for i in range(LEN):
-    if i < 33:
-        continue
 
     filename = "../gdelt/files/"  + str(i) + ".csv"
 
@@ -300,10 +298,9 @@ for i in range(LEN):
 
     except IOError as e:
         print("Skipping file " + str(i) + ".csv")
-        print(e)
         continue
 
     conn.commit()
 
-conn.close()
 cursor.close()
+conn.close()
