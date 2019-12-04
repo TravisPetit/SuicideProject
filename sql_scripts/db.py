@@ -278,17 +278,31 @@ def add_event(row, cursor,
 
 LEN = 163536
 for i in range(LEN):
+    if i < 33:
+        continue
+
     filename = "../gdelt/files/"  + str(i) + ".csv"
-    with open(filename, mode="r") as data:
-        reader = csv.reader(data, delimiter ="\t")
-        for row in map(GDELTRow, reader):
-            #print(row.__dict__)
-            actor1_geo_id, actor2_geo_id, action_geo_id = add_geos(row, cursor)
-            actor1_id, actor2_id = add_actors(row, cursor)
-            action_id = add_action(row, cursor)
-            add_event(row, cursor, 
-                   actor1_geo_id, actor2_geo_id, action_geo_id,
-                   actor1_id, actor2_id, action_id)
+
+    try: 
+        with open(filename, mode="r") as data:
+            reader = csv.reader(data, delimiter ="\t")
+            for row in map(GDELTRow, reader):
+                #print(row.__dict__)
+                actor1_geo_id, actor2_geo_id, action_geo_id = add_geos(row, cursor)
+                actor1_id, actor2_id = add_actors(row, cursor)
+                action_id = add_action(row, cursor)
+                add_event(row, cursor, 
+                       actor1_geo_id, actor2_geo_id, action_geo_id,
+                       actor1_id, actor2_id, action_id)
+        if i%500==0:
+            time = str(datetime.datetime.now().time().replace(microsecond=0))
+            print(time + "   " + str(i) + " / " + str(LEN))
+
+    except IOError as e:
+        print("Skipping file " + str(i) + ".csv")
+        print(e)
+        continue
+
     conn.commit()
 
 conn.close()
