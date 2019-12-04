@@ -4,20 +4,20 @@ SET SEARCH_PATH TO suicide_schema;
 CREATE EXTENSION postgis;
 
 CREATE TABLE "Action" (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     eventCode VARCHAR(255) NOT NULL,
     eventRootCode VARCHAR(255) NOT NULL,
     eventBaseCode VARCHAR(255) NOT NULL,
-    isRootEvent BOOLEAN NOT NULL,
-    quadClass INTEGER NOT NULL,
-    goldsteinScale REAL NOT NULL
+    isRootEvent BOOLEAN NULL, -- NN
+    quadClass INTEGER NULL, -- NN
+    goldsteinScale REAL NULL -- NN
 );
 
 CREATE UNIQUE INDEX idx_action_event_code ON "Action" (eventRootCode, eventBaseCode, eventCode);
 
 CREATE TABLE Geo (
-    id SERIAL PRIMARY KEY,
-    "type" INTEGER NOT NULL,
+    id BIGSERIAL PRIMARY KEY,
+    "type" INTEGER NULL, -- NN
     fullName VARCHAR(255) NULL,
     countryCode VARCHAR(255) NULL, -- should be 2
     adm1Code VARCHAR(255) NULL, -- should be 4
@@ -30,7 +30,7 @@ CREATE UNIQUE INDEX idx_geo_feature_id ON Geo (featureID);
 CREATE INDEX idx_geo_coordinates ON Geo USING GIST (coordinates);
 
 CREATE TABLE Actor (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     code VARCHAR(255) NOT NULL,
     "name" VARCHAR(255) NOT NULL,
     countryCode VARCHAR(255) NULL, -- should be 3
@@ -46,18 +46,18 @@ CREATE TABLE Actor (
 CREATE UNIQUE INDEX idx_actor_code ON Actor (code, "name");
 
 CREATE TABLE "Event" (
-    globalEventID INTEGER PRIMARY KEY,
-    dateOccurred DATE NOT NULL,
-    actionID INTEGER NOT NULL,
-    actor1ID INTEGER NULL,
-    actor2ID INTEGER NULL,
-    actor1GeoID INTEGER NULL,
-    actor2GeoID INTEGER NULL,
-    geoID INTEGER NULL,
-    avgTone INTEGER NOT NULL,
-    numMentions INTEGER NOT NULL,
-    numSources INTEGER NOT NULL,
-    numArticles INTEGER NOT NULL,
+    globalEventID BIGINT PRIMARY KEY,
+    dateOccurred DATE NULL, -- NN
+    actionID BIGINT NOT NULL,
+    actor1ID BIGINT NULL,
+    actor2ID BIGINT NULL,
+    actor1GeoID BIGINT NULL,
+    actor2GeoID BIGINT NULL,
+    geoID BIGINT NULL,
+    avgTone INTEGER NULL, -- NN
+    numMentions INTEGER NULL, -- NN
+    numSources INTEGER NULL, -- NN
+    numArticles INTEGER NULL, -- NN
 
     FOREIGN KEY (actionID) REFERENCES "Action" (id),
     FOREIGN KEY (actor1ID) REFERENCES Actor (id),
@@ -90,7 +90,7 @@ CREATE TABLE City (
 );
 
 CREATE TABLE SuicideRate (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     year INTEGER NOT NULL,
     "population" INTEGER NOT NULL,
     deaths INTEGER NOT NULL,
@@ -104,7 +104,7 @@ CREATE TABLE SuicideRate (
 CREATE UNIQUE INDEX suicide_rate_county_year ON SuicideRate (year, countyGeoID);
 
 CREATE TABLE ElectionResult (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     year INTEGER NOT NULL,
     votesDem INTEGER NOT NULL,
     votesGOP INTEGER NOT NULL,
