@@ -1,6 +1,7 @@
 import psycopg2
 import csv
 import datetime
+import sys
 
 conn = psycopg2.connect(
 	host="localhost",
@@ -276,8 +277,11 @@ def add_event(row, cursor,
                   , (row.GlobalEventID, row.Day, action_id, actor1_id, actor2_id, action_geo_id, actor1_geo_id, actor2_geo_id,
                         row.AvgTone, row.NumMentions, row.NumSources, row.NumArticles))
 
+process_num = sys.argv[0]
+num_processes = sys.argv[1]
+
 LEN = 163536
-for i in range(LEN):
+for i in range(process_num, LEN, num_processes):
 
     filename = "../gdelt/files/"  + str(i) + ".csv"
 
@@ -292,7 +296,7 @@ for i in range(LEN):
                 add_event(row, cursor, 
                        actor1_geo_id, actor2_geo_id, action_geo_id,
                        actor1_id, actor2_id, action_id)
-        if i%500==0:
+        if i%500 <= num_processes:
             time = str(datetime.datetime.now().time().replace(microsecond=0))
             print(time + "   " + str(i) + " / " + str(LEN))
 
