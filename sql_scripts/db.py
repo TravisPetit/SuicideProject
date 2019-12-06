@@ -191,6 +191,42 @@ class GDELTRow:
         self.ActionGeo_Long = db_float(row[57])
         self.ActionGeo_FeatureID = db_str(row[58])
 
+# The county_votes.csv file contains:
+# 0  A index (int)
+# 1  B combined_fips (int)
+# 2  C votes_dem_2016 (int)
+# 3  D votes_gop_2016 (int)
+# 4  E toatl_votes_2016 (int)
+# 5  F per_dem_2016 (float)
+# 6  G per_gop (float)
+# 7  H diff_2016 (int)
+# 8  I per_point_diff_2016 (float)
+# 9  J state_abbr (string)
+# 10 K county_name (string)
+# 11 L FIPS (int)
+# 12 M total_votes_2012 (int)
+# 13 N votes_dem_2012 (int)
+# 14 O votes_gop_2012 (int)
+# 15 P county_fips (int)
+# 16 Q state_fips (int)
+# 17 R per_dem_2012 (float)
+# 18 S per_gop_2012 (float)
+# 19 T diff_2012 (int)
+# 20 U per_point_diff_2012 (float)
+
+class CountyVotesRow:
+    def __init__(self, row):
+        self.county_geo_id = db_int(row[11]) #TODO? fips for geoID?
+
+        self.votes_dem_2016 = db_int(row[2])
+        self.votes_gop_2016 = db_int(row[3])
+        self.votes_other_2016 = db_int(row[4] - row[3] - row[2])
+
+        self.votes_dem_2012 = db_int(row[13])
+        self.votes_gop_2012 = db_int(row[14])
+        self.votes_other_2016 = db_int(row[12] - row[13] - row[14])
+
+
 def add_geo(typ, full_name, country_code, adm1_code, adm2_code,
             lat, lon, feature_id, cursor):
     cursor.execute('INSERT INTO Geo '
@@ -248,7 +284,7 @@ def add_actors(row, cursor):
                 row.Actor1Religion2Code, row.Actor1Type1Code,
                 row.Actor1Type2Code, row.Actor1Type3Code,
                 cursor)
-        
+
     if row.Actor2Code is not None:
         actor2_id = add_actor(row.Actor2Code, row.Actor2Name,
                 row.Actor2CountryCode, row.Actor2KnownGroupCode,
