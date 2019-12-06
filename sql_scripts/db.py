@@ -226,6 +226,15 @@ class CountyVotesRow:
         self.votes_gop_2012 = db_int(row[14])
         self.votes_other_2016 = db_int(row[12] - row[13] - row[14])
 
+        #self.city = ...
+
+
+def add_election_result(year, votes_dem, votes_gop, votes_other, county_geo_id, cursor):
+    cursor.execute('INSERT INTO ElectionResult '
+                   + '(year, votesDem, votesGOP, votesOther, countyGeoID) '
+                   + 'VALUES (%s %s %s %s %s)'
+                   , (year, votes_dem, votes_gop, votes_other, county_geo_id))
+
 
 def add_geo(typ, full_name, country_code, adm1_code, adm2_code,
             lat, lon, feature_id, cursor):
@@ -303,7 +312,7 @@ def add_action(row, cursor):
                   , (row.EventCode, row.EventRootCode, row.EventBaseCode, row.IsRootEvent, row.QuadClass, row.GoldsteinScale))
     return cursor.fetchone()[0]
 
-def add_event(row, cursor, 
+def add_event(row, cursor,
         actor1_geo_id, actor2_geo_id, action_geo_id,
         actor1_id, actor2_id, action_id):
     cursor.execute('INSERT INTO "Event" '
@@ -321,7 +330,7 @@ for i in range(process_num, LEN, num_processes):
 
     filename = "../gdelt/files/"  + str(i) + ".csv"
 
-    try: 
+    try:
         with open(filename, mode="r") as data:
             reader = csv.reader(data, delimiter ="\t")
             for row in map(GDELTRow, reader):
@@ -329,7 +338,7 @@ for i in range(process_num, LEN, num_processes):
                 actor1_geo_id, actor2_geo_id, action_geo_id = add_geos(row, cursor)
                 actor1_id, actor2_id = add_actors(row, cursor)
                 action_id = add_action(row, cursor)
-                add_event(row, cursor, 
+                add_event(row, cursor,
                        actor1_geo_id, actor2_geo_id, action_geo_id,
                        actor1_id, actor2_id, action_id)
         if i%500 <= num_processes:
