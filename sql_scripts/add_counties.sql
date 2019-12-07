@@ -1,6 +1,6 @@
 set search_path to suicide_schema;
 
-DROP TABLE County;
+DROP TABLE IF EXISTS County cascade;
 DROP TABLE City;
 
 ALTER TABLE "uscounties"
@@ -14,4 +14,4 @@ CREATE TABLE City (
     	FOREIGN KEY (countyGID) REFERENCES County (GID)
 );
 
-INSERT INTO City (geoID, countyGID) SELECT id gid FROM Geo join County ON st_covers("geom"::geography, coordinates) WHERE "type" = '3';
+INSERT INTO City (geoID, countyGID) SELECT id, gid FROM Geo join County ON st_covers("geom"::geography, coordinates) WHERE "type" = '3';
