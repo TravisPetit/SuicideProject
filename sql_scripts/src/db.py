@@ -1,7 +1,6 @@
 import psycopg2
 import csv
 import datetime
-import sys
 from constants import COUNTY_TO_STATE, ABBR_TO_STATE, STATE_TO_ABBR
 
 conn = psycopg2.connect(
@@ -227,24 +226,43 @@ class CountyVotesRow:
         self.votes_gop_2012 = db_int(row[14])
         self.votes_other_2016 = db_int(row[12] - row[13] - row[14])
 
-        self.state = db_str(COUNTY_TO_STATE[row[10].lower()])
+        self.county = db_str(row[10].lower())
+        #self.state = db_str(COUNTY_TO_STATE[row[10].lower()])
+
+def county_to_geo_id(county_str, cursor):
+    cursor.execute('SELECT id FROM Geo JOIN County ON st_covers("geom"::geography, coordinates) WHERE "name"= %s LIMIT 1', (county_str))
+    return cursor.fetchone()[0]
+
+
+def state_to_geo_id(state_str, cursor):
+    cursor.execute('SELECT id FROM Geo JOIN County ON st_covers("geom"::geography, coordinates) WHERE "state_name"= %s LIMIT 1', (state_str))
+    return cursor.fetchone()[0]
 
 
 def add_election_result(year, votes_dem, votes_gop, votes_other, county_geo_id, cursor):
     cursor.execute('INSERT INTO ElectionResult '
                    + '(year, votesDem, votesGOP, votesOther, countyGeoID) '
-                   + 'VALUES (%s %s %s %s %s)'
+                   + 'VALUES (%s, %s, %s, %s, %s)'
                    , (year, votes_dem, votes_gop, votes_other, county_geo_id))
 
 
-def add_state(state_str, cursor):
-    cursor.execute('INSERT INTO "STATE" VALUES (geoID) (SELECT id FROM Geo WHERE adm1Code = %s LIMIT 1)', (STATE_TO_ABBR[state_str]))
+def add_election_results(row, cursor):
+    add_election_result(2016, row.votes_dem_2016, row.votes_gop_2016, row.votes_other_2016, county_to_geo_id(row.county))
+    add_election_result(2012, row.votes_dem_2012, row.votes_gop_2012, row.votes_other_2012, county_to_geo_id(row.county))
 
 
-def add_county(fips, county_str, cursor):
-    cursor.execute('INSERT INTO County VALUES (fips, geoID, stateGeoID) '
-                   + '(%s, SELECT id FROM Geo WHERE adm2Code = %s LIMIT 1, SELECT id from Geo WHERE adm1Code = %s LIMIT 1)',
-                   (fips, COUNTY_TO_ADM1[county_str], STATE_TO_ABBR[COUNTY_TO_STATE[county_str]]))
+class SuicideRate:
+    pass
+
+
+#def add_state(state_str, cursor):
+#    cursor.execute('INSERT INTO "STATE" VALUES (geoID) (SELECT id FROM Geo WHERE adm1Code = %s LIMIT 1)', (STATE_TO_ABBR[state_str]))
+
+
+#def add_county(fips, county_str, cursor):
+#    cursor.execute('INSERT INTO County VALUES (fips, geoID, stateGeoID) '
+#                   + '(%s, SELECT id FROM Geo WHERE adm2Code = %s LIMIT 1, SELECT id from Geo WHERE adm1Code = %s LIMIT 1)',
+#                   (fips, COUNTY_TO_ADM1[county_str], STATE_TO_ABBR[COUNTY_TO_STATE[county_str]]))
 
 
 def add_geo(typ, full_name, country_code, adm1_code, adm2_code,
@@ -333,11 +351,12 @@ def add_event(row, cursor,
                   , (row.GlobalEventID, row.Day, action_id, actor1_id, actor2_id, action_geo_id, actor1_geo_id, actor2_geo_id,
                         row.AvgTone, row.NumMentions, row.NumSources, row.NumArticles))
 
-#process_num = sys.argv[0]
-#num_processes = sys.argv[1]
+with open("../../counties/county_votes.csv") as data:
+    reader = csv.reader(delimiter = ",")
+    for row in map(CountyVotesRow, reader):
+        add_election_results(row, cursor)
 
 LEN = 163536
-#for i in range(process_num, LEN, num_processes):
 for i in range(LEN):
 
     filename = "../../gdelt/files/"  + str(i) + ".csv"
@@ -346,7 +365,6 @@ for i in range(LEN):
         with open(filename, mode="r") as data:
             reader = csv.reader(data, delimiter ="\t")
             for row in map(GDELTRow, reader):
-                #print(row.__dict__)
                 actor1_geo_id, actor2_geo_id, action_geo_id = add_geos(row, cursor)
                 actor1_id, actor2_id = add_actors(row, cursor)
                 action_id = add_action(row, cursor)
