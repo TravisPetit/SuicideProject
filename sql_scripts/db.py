@@ -16,9 +16,9 @@ cursor.execute("SET search_path TO suicide_schema")
 #DATA FORMATING:
 #The csv files contain:
 #0  A.  GlobalEventID (int)
-#1  B.  Day (int) 
-#2  C.  MonthYear (int) 
-#3  D.  Year (int) 
+#1  B.  Day (int)
+#2  C.  MonthYear (int)
+#3  D.  Year (int)
 #4  E.  FractionDate (float)
 #5  F.  Actor1Code (string)
 #6  G.  Actor1Name (string)
@@ -191,6 +191,19 @@ class GDELTRow:
         self.ActionGeo_Long = db_float(row[57])
         self.ActionGeo_FeatureID = db_str(row[58])
 
+
+def county_to_state(filename):
+    d = {}
+    with open(filename, mode="r") as data:
+        reader = csv.reader(data, delimiter ="\t")
+        skip1 = True
+        for row in reader:
+            if skip1:
+                skip1 = False
+                continue
+            d[row[0].lower()] = row[1].lower()
+    return d
+
 # The county_votes.csv file contains:
 # 0  A index (int)
 # 1  B combined_fips (int)
@@ -214,6 +227,7 @@ class GDELTRow:
 # 19 T diff_2012 (int)
 # 20 U per_point_diff_2012 (float)
 
+c_to_s = county_to_state("../counties/UScounties.csv")
 class CountyVotesRow:
     def __init__(self, row):
         self.county_geo_id = db_int(row[11]) #TODO? fips for geoID?
@@ -226,7 +240,7 @@ class CountyVotesRow:
         self.votes_gop_2012 = db_int(row[14])
         self.votes_other_2016 = db_int(row[12] - row[13] - row[14])
 
-        #self.city = ...
+        self.state = c_to_s[row[10].lower()]
 
 
 def add_election_result(year, votes_dem, votes_gop, votes_other, county_geo_id, cursor):
@@ -271,7 +285,7 @@ def add_geos(row, cursor):
     return actor1_geo_id, actor2_geo_id, action_geo_id
 
 def add_actor(code, name, country_code, known_group_code,
-        ethnic_code, religion1_code, religion2_code, 
+        ethnic_code, religion1_code, religion2_code,
         type1_code, type2_code, type3_code, cursor):
     cursor.execute('INSERT INTO Actor '
                   + '(code, "name", countryCode, knownGroupCode, ethnicCode, '
@@ -280,7 +294,7 @@ def add_actor(code, name, country_code, known_group_code,
                   + 'ON CONFLICT (code, "name") DO UPDATE SET code = EXCLUDED.code '
                   + 'RETURNING id;'
                   , (code, name, country_code, known_group_code,
-                        ethnic_code, religion1_code, religion2_code, 
+                        ethnic_code, religion1_code, religion2_code,
                         type1_code, type2_code, type3_code))
     return cursor.fetchone()[0]
 
