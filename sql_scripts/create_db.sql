@@ -1,4 +1,4 @@
-CREATE SCHEMA suicide_schema;
+CREATE SCHEMA suicide_schema;
 SET SEARCH_PATH TO suicide_schema;
 
 CREATE EXTENSION postgis;
