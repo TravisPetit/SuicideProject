@@ -109,7 +109,7 @@ CREATE TABLE SuicideRate (
     ageAdjustedRate REAL NULL,
     countyGeoID INTEGER NOT NULL,
 
-    FOREIGN KEY (countyGeoID) REFERENCES County (geoID) 
+    FOREIGN KEY (countyGeoID) REFERENCES County (GID) 
 );
 
 CREATE UNIQUE INDEX suicide_rate_county_year ON SuicideRate (year, countyGeoID);
@@ -122,7 +122,7 @@ CREATE TABLE ElectionResult (
     votesOther INTEGER NOT NULL,
     countyGeoID INTEGER NOT NULL,
 
-    FOREIGN KEY (countyGeoID) REFERENCES County (geoID) 
+    FOREIGN KEY (countyGeoID) REFERENCES County (gid) 
 );
 
 CREATE UNIQUE INDEX election_result_county_year ON ElectionResult (year, countyGeoID);
