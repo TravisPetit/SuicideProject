@@ -261,7 +261,14 @@ def add_election_results(row, cursor):
 class UnderlyingCauseOfDeathRow:
     def __init__(self, row):
         #self.county = db_str(row[1].split(",")[0].splice())
-        self.fips = db_int(row[2])
+        self.fips = db_str(row[2])
+
+        if len(self.fips) > 5 :
+            raise Exception("bad fips val %s", (self.fips,))
+
+        while len(self.fips) != 5:
+            self.fips = "0" + self.fips
+
         self.year = db_int(row[3])
         self.deaths = db_int(row[5])
         self.population = db_int(row[6])
