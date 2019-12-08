@@ -29,4 +29,4 @@ Then running `psql -h localhost` instead of psql should do the trick.
 
 13. Cd to the src folder: `cd /path/to/SuicideProject/sql_scripts/src`.
 
-14. Alas, you may begin populating the database with: `python2 -all`. Make sure to run this as the postgres user! Expect this to take a couple of days.
+14. Alas, you may begin populating the database with: `python2 db.py -all`. Make sure to run this as the postgres user! Expect this to take a couple of days.
