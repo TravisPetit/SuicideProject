@@ -90,7 +90,7 @@ CREATE TABLE County (
     FOREIGN KEY (stateGeoID) REFERENCES "State" (geoID)
 );
 
-SELECT AddGeometryColumn('', 'County', 'geom', '0', 'MULTIPOLYGON', 2);
+SELECT AddGeometryColumn('', 'county', 'geom', '0', 'MULTIPOLYGON', 2);
 
 CREATE TABLE City (
     geoID INTEGER PRIMARY KEY,
