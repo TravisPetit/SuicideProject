@@ -244,6 +244,7 @@ def add_election_result(year, votes_dem, votes_gop, votes_other, county_geo_id, 
                    + '(year, votesDem, votesGOP, votesOther, countyGeoID) '
                    + 'VALUES (%s, %s, %s, %s, %s)'
                    , (year, votes_dem, votes_gop, votes_other, county_geo_id))
+    # on conlifct do nothing?
 
 
 def add_election_results(row, cursor):
@@ -277,6 +278,7 @@ def add_suicide_rate(year, population, deaths, crude_rate, age_adjusted_rate, co
                    + '(year, "population", deaths, crudeRate, ageAdjustedRate, countyGeoID) '
                    + 'VALUES '
                    + '(%s, %s, %s, %s, %s, %s)', (year, population, deaths, crude_rate, age_adjusted_rate, county_geo_id))
+    # on conlifct do nothing?
 
 
 def add_suicide_rates(row, cursor):
