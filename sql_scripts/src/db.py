@@ -1,17 +1,8 @@
 import psycopg2
 import csv
 import datetime
+import sys
 #from constants import COUNTY_TO_STATE, ABBR_TO_STATE, STATE_TO_ABBR
-
-conn = psycopg2.connect(
-	host="localhost",
-	user="postgres",
-        database="postgres",
-	password="123"
-        )
-
-cursor = conn.cursor()
-cursor.execute("SET search_path TO suicide_schema")
 
 #DATA FORMATING:
 #The csv files contain:
@@ -386,45 +377,71 @@ def add_event(row, cursor,
                   , (row.GlobalEventID, row.Day, action_id, actor1_id, actor2_id, action_geo_id, actor1_geo_id, actor2_geo_id,
                         row.AvgTone, row.NumMentions, row.NumSources, row.NumArticles))
 
-LEN = 163536
-for i in range(LEN):
+def main():
+    conn = psycopg2.connect(
+        host="localhost",
+        user="postgres",
+        database="postgres",
+        password="123"
+    )
+    
+    cursor = conn.cursor()
 
-    filename = "../../gdelt/files/"  + str(i) + ".csv"
+    do_all = '-all' in sys.argv or '-a' in sys.argv
 
-    try:
-        with open(filename, mode="r") as data:
-            reader = csv.reader(data, delimiter ="\t")
-            for row in map(GDELTRow, reader):
-                actor1_geo_id, actor2_geo_id, action_geo_id = add_geos(row, cursor)
-                actor1_id, actor2_id = add_actors(row, cursor)
-                action_id = add_action(row, cursor)
-                add_event(row, cursor,
-                       actor1_geo_id, actor2_geo_id, action_geo_id,
-                       actor1_id, actor2_id, action_id)
-        if i%500 == 0:
-            time = str(datetime.datetime.now().time().replace(microsecond=0))
-            print(time + "   " + str(i) + " / " + str(LEN))
+    if do_all or '-create' in sys.argv or '-c' in sys.argv:
+        cursor.execute(open("create_db.sql", "r").read())
+        cursor.commit()
+    else:
+        cursor.execute("SET search_path TO suicide_schema")
 
-    except IOError as e:
-        print("Skipping file " + str(i) + ".csv")
-        continue
+    if do_all or '-gdelt' in sys.argv or '-g' in sys.argv:
+        LEN = 163536
+        for i in range(LEN):
 
-    conn.commit()
+            filename = "../../gdelt/files/"  + str(i) + ".csv"
 
-# TODO: run uscounties.sql
-# TODO: run add_counties.sql
+            try:
+                with open(filename, mode="r") as data:
+                    reader = csv.reader(data, delimiter ="\t")
+                    for row in map(GDELTRow, reader):
+                        actor1_geo_id, actor2_geo_id, action_geo_id = add_geos(row, cursor)
+                        actor1_id, actor2_id = add_actors(row, cursor)
+                        action_id = add_action(row, cursor)
+                        add_event(row, cursor,
+                            actor1_geo_id, actor2_geo_id, action_geo_id,
+                            actor1_id, actor2_id, action_id)
+                if i%500 == 0:
+                    time = str(datetime.datetime.now().time().replace(microsecond=0))
+                    print(time + "   " + str(i) + " / " + str(LEN))
 
-with open("./underlying_cause_of_death.txt") as data:
-    reader = csv.reader(data, delimiter = "\t")
-    for row in map(UnderlyingCauseOfDeathRow, reader):
-        add_suicide_rates(row, cursor)
-conn.commit()
+            except IOError:
+                print("Skipping file " + str(i) + ".csv")
+                continue
 
-with open("../../counties/county_votes.csv") as data:
-    reader = csv.reader(delimiter = ",")
-    for row in map(CountyVotesRow, reader):
-        add_election_results(row, cursor)
-conn.commit()
+            conn.commit()
 
-cursor.close()
-conn.close()
+    if do_all or '-county' in sys.argv or '-co' in sys.argv:
+        cursor.execute(open("uscounties.sql", "r").read())
+        cursor.execute(open("add_counties.sql", "r").read())
+        cursor.commit()
+
+    if do_all or '-suicide' in sys.argv or '-s' in sys.argv:
+        with open("./underlying_cause_of_death.txt") as data:
+            reader = csv.reader(data, delimiter = "\t")
+            for row in map(UnderlyingCauseOfDeathRow, reader):
+                add_suicide_rates(row, cursor)
+        conn.commit()
+
+    if do_all or '-elections' in sys.argv or '-e' in sys.argv:
+        with open("../../counties/county_votes.csv") as data:
+            reader = csv.reader(delimiter = ",")
+            for row in map(CountyVotesRow, reader):
+                add_election_results(row, cursor)
+        conn.commit()
+
+    cursor.close()
+    conn.close()
+
+if __name__ == "__main__":
+    main()
