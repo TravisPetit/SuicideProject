@@ -458,7 +458,7 @@ def main():
     do_all = '-all' in sys.argv or '-a' in sys.argv
 
     if do_all or '-create' in sys.argv or '-c' in sys.argv:
-        cursor.execute(open("create_db.sql", "r").read())
+        cursor.execute(open("../create_db.sql", "r").read())
         cursor.commit()
     else:
         cursor.execute("SET search_path TO suicide_schema")
