@@ -422,12 +422,12 @@ def main():
             conn.commit()
 
     if do_all or '-county' in sys.argv or '-co' in sys.argv:
-        cursor.execute(open("uscounties.sql", "r").read())
-        cursor.execute(open("add_counties.sql", "r").read())
+        cursor.execute(open("../uscounties.sql", "r").read())
+        cursor.execute(open("../add_counties.sql", "r").read())
         cursor.commit()
 
     if do_all or '-suicide' in sys.argv or '-s' in sys.argv:
-        with open("./underlying_cause_of_death.txt") as data:
+        with open("../../suicide/underlying_cause_of_death.txt") as data:
             reader = csv.reader(data, delimiter = "\t")
             for row in map(UnderlyingCauseOfDeathRow, reader):
                 add_suicide_rates(row, cursor)
