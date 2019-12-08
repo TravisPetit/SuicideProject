@@ -80,6 +80,26 @@ import sys
 #65 BN. Gibberigh
 #66 BO. Gibberish
 
+
+def fsti(value):
+    """ float string to int """
+    if value == '':
+        return None
+    else:
+        try:
+            return int(float(value))
+        except ValueError:
+            return None
+
+def db_float(value):
+    if value == '':
+        return None
+    else:
+        try:
+            return float(value)
+        except ValueError:
+            return None
+
 def db_int(value):
     if value == '':
         return None
@@ -209,13 +229,21 @@ class CountyVotesRow:
     def __init__(self, row):
         self.fips = db_str(row[11])
 
-        self.votes_dem_2016 = db_int(row[2])
-        self.votes_gop_2016 = db_int(row[3])
-        self.votes_other_2016 = db_int(row[4] - row[3] - row[2])
+        self.votes_dem_2016 = fsti(row[2])
+        self.votes_gop_2016 = fsti(row[3])
+        
+        if row[4] == "" or row[3] == "" or row[2] == "":
+            self.votes_other_2016 = None
+        else:
+            self.votes_other_2016 = fsti(row[4]) - fsti(row[3]) - fsti(row[2])
 
-        self.votes_dem_2012 = db_int(row[13])
-        self.votes_gop_2012 = db_int(row[14])
-        self.votes_other_2016 = db_int(row[12] - row[13] - row[14])
+        self.votes_dem_2012 = fsti(row[13])
+        self.votes_gop_2012 = fsti(row[14])
+
+        if row[12] == "" or row[13] == "" or row[14] == "":
+            self.votes_other_2016 = None
+        else:
+            self.votes_other_2012 = fsti(row[12]) - fsti(row[13]) - fsti(row[14])
 
         #self.county = db_str(row[10].lower())
         #self.state = db_str(COUNTY_TO_STATE[row[10].lower()])
@@ -223,7 +251,11 @@ class CountyVotesRow:
 def gid_from_fips(fips, cursor):
     #cursor.execute("SELECT gid FROM County WHERE fips = '%s' LIMIT 1", (fips))
     cursor.execute("SELECT gid FROM County WHERE fips = '" + str(fips) +  "' LIMIT 1")
-    return cursor.fetchone()[0]
+    try:
+        return cursor.fetchone()[0]
+    except Exception as e:
+        #print(fips)
+        raise e
 
 def county_to_geo_id(county_str, cursor):
     cursor.execute('SELECT id FROM Geo JOIN County ON st_covers("geom"::geography, coordinates) WHERE "name"= %s LIMIT 1', (county_str))
@@ -243,9 +275,27 @@ def add_election_result(year, votes_dem, votes_gop, votes_other, county_gid, cur
 
 
 def add_election_results(row, cursor):
-    gid = gid_from_fips(row.fips, cursor)
-    add_election_result(2016, row.votes_dem_2016, row.votes_gop_2016, row.votes_other_2016, gid, cursor)
-    add_election_result(2012, row.votes_dem_2012, row.votes_gop_2012, row.votes_other_2012, gid, cursor)
+    try:
+        gid = gid_from_fips(row.fips, cursor)
+    except:
+        print("Skipping row with fips " + row.fips)
+        return
+
+    if row.votes_dem_2016 == None or row.votes_gop_2016 == None or row.votes_other_2016 == None:
+        pass
+        #print("skipping:")
+        #print(row.__dict__)
+    else:
+        add_election_result(2016, row.votes_dem_2016, row.votes_gop_2016,
+                row.votes_other_2016, gid, cursor)
+
+    if row.votes_dem_2012 == None or row.votes_gop_2012 == None or row.votes_other_2012 == None:
+        pass
+        #print("skipping:")
+        #print(row.__dict__)
+    else:
+        add_election_result(2012, row.votes_dem_2012, row.votes_gop_2012,
+                row.votes_other_2012, gid, cursor)
 
 
 # the underlying cause of death file contains
@@ -462,8 +512,14 @@ def main():
 
     if do_all or '-elections' in sys.argv or '-e' in sys.argv:
         with open("../../counties/county_votes.csv") as data:
-            reader = csv.reader(delimiter = ",")
-            for row in map(CountyVotesRow, reader):
+            reader = csv.reader(data, delimiter = ",")
+            #for row in map(CountyVotesRow, reader):
+            skip1 = True
+            for row in reader:
+                if skip1:
+                    skip1 = False
+                    continue
+                row = CountyVotesRow(row)
                 add_election_results(row, cursor)
         conn.commit()
 
