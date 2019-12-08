@@ -271,10 +271,20 @@ class UnderlyingCauseOfDeathRow:
             self.fips = "0" + self.fips
 
         self.year = db_int(row[3])
+
         self.deaths = db_int(row[5])
+        if self.deaths == "Missing" : self.deaths = None
+
         self.population = db_int(row[6])
+        if self.population == "Missing" : self.population = None
+
         self.crude_rate = db_str(row[7])
+        if self.crude_rate == "Unreliable" : self.crude_rate = None
+        if self.crude_rate == "Missing" : self.crude_rate = None
+
         self.age_adjusted_rate = db_str(row[8])
+        if self.age_adjusted_rate == "Unreliable" : self.age_adjusted_rate = None
+        if self.age_adjusted_rate == "Missing" : self.age_adjusted_rate = None
 
 
 def add_suicide_rate(year, population, deaths, crude_rate, age_adjusted_rate, county_geo_id, cursor):
@@ -445,6 +455,8 @@ def main():
                     skip1 = False
                     continue
                 row = UnderlyingCauseOfDeathRow(row)
+                if row.deaths is None or row.population is None:
+                    continue
                 add_suicide_rates(row, cursor)
         conn.commit()
 
