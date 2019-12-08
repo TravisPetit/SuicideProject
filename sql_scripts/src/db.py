@@ -435,8 +435,12 @@ def main():
 
     if do_all or '-suicide' in sys.argv or '-s' in sys.argv:
         with open("../../suicide/underlying_cause_of_death.txt") as data:
+            skip1 = True
             reader = csv.reader(data, delimiter = "\t")
             for row in map(UnderlyingCauseOfDeathRow, reader):
+                if skipme:
+                    skip1 = False
+                    continue
                 add_suicide_rates(row, cursor)
         conn.commit()
 
