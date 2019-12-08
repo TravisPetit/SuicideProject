@@ -10,7 +10,7 @@ On Ubutu-server:
 5. Install postGIS: `apt install postgis`.
 6. Check your current postgres version: `sudo -i -u postgres` and then `psql --version`. You should get something like:
 *psql (PostgreSQL) x.y*
-7. Switch back to the root user by pressing control d and install the fitting postgresql developer server package: `postgresql-server-dev-x.y`, where x.y is your postgres version.
+7. Switch back to the root user by pressing control d and install the fitting postgresql developer server package: `apt install postgresql-server-dev-x.y`, where x.y is your postgres version.
 
 8. Install psycopg2: `pip2 install psycopg2`. If you get the error `Command "python setup.py egg_info" failed with error code 1 in /tmp/pip-build-vkoXyM/psycopg2/ ` then chances are that your setuptools are out of date, running `pip install --upgrade setuptools` should fix this.
 
