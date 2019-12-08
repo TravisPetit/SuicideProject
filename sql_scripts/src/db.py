@@ -1,7 +1,7 @@
 import psycopg2
 import csv
 import datetime
-from constants import COUNTY_TO_STATE, ABBR_TO_STATE, STATE_TO_ABBR
+#from constants import COUNTY_TO_STATE, ABBR_TO_STATE, STATE_TO_ABBR
 
 conn = psycopg2.connect(
 	host="localhost",
