@@ -83,8 +83,11 @@ CREATE TABLE County (
 
 CREATE TABLE County (
     gid SERIAL PRIMARY KEY,
-    "name" VARCHAR(32),
-    fips VARCHAR(5)
+    "name" VARCHAR(32) NOT NULL,
+    fips VARCHAR(5) NOT NULL,
+    stateGeoID INTEGER NULL,
+    
+    FOREIGN KEY (stateGeoID) REFERENCES "State" (geoID)
 );
 
 SELECT AddGeometryColumn('', 'County', 'geom', '0', 'MULTIPOLYGON', 2);
