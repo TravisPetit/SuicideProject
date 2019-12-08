@@ -73,13 +73,13 @@ CREATE TABLE "State" (
     FOREIGN KEY (geoID) REFERENCES Geo (id)
 );
 
-CREATE TABLE County (
-    geoID INTEGER PRIMARY KEY,
-    stateGeoID INTEGER,
-
-    FOREIGN KEY (geoID) REFERENCES Geo (id),
-    FOREIGN KEY (stateGeoID) REFERENCES "State" (geoID)
-);
+--CREATE TABLE County (
+--    geoID INTEGER PRIMARY KEY,
+--    stateGeoID INTEGER,
+--
+--    FOREIGN KEY (geoID) REFERENCES Geo (id),
+--    FOREIGN KEY (stateGeoID) REFERENCES "State" (geoID)
+--);
 
 CREATE TABLE County (
     gid SERIAL PRIMARY KEY,
