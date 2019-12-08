@@ -221,7 +221,8 @@ class CountyVotesRow:
         #self.state = db_str(COUNTY_TO_STATE[row[10].lower()])
 
 def gid_from_fips(fips, cursor):
-    cursor.execute('SELECT gid FROM County WHERE fips = %s LIMIT 1', (fips))
+    #cursor.execute("SELECT gid FROM County WHERE fips = '%s' LIMIT 1", (fips))
+    cursor.execute("SELECT gid FROM County WHERE fips = '" + str(fips) +  "' LIMIT 1")
     return cursor.fetchone()[0]
 
 def county_to_geo_id(county_str, cursor):
