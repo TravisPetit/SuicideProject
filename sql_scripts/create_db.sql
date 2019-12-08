@@ -81,12 +81,20 @@ CREATE TABLE County (
     FOREIGN KEY (stateGeoID) REFERENCES "State" (geoID)
 );
 
+CREATE TABLE County (
+    gid SERIAL PRIMARY KEY,
+    "name" VARCHAR(32),
+    fips VARCHAR(5)
+);
+
+SELECT AddGeometryColumn('', 'County', 'geom', '0', 'MULTIPOLYGON', 2);
+
 CREATE TABLE City (
     geoID INTEGER PRIMARY KEY,
-    countyGeoID INTEGER,
+   	countyGID INTEGER,
 
     FOREIGN KEY (geoID) REFERENCES Geo (id),
-    FOREIGN KEY (countyGeoID) REFERENCES County (geoID)
+    FOREIGN KEY (countyGID) REFERENCES County (GID)
 );
 
 CREATE TABLE SuicideRate (

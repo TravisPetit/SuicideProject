@@ -226,30 +226,34 @@ class CountyVotesRow:
         self.votes_gop_2012 = db_int(row[14])
         self.votes_other_2016 = db_int(row[12] - row[13] - row[14])
 
-        self.county = db_str(row[10].lower())
+        #self.county = db_str(row[10].lower())
         #self.state = db_str(COUNTY_TO_STATE[row[10].lower()])
+
+def gid_from_fips(fips, cursor):
+    cursor.execute('SELECT gid FROM County WHERE fips = %s LIMIT 1', (fips))
+    return cursor.fetchone()[0]
 
 def county_to_geo_id(county_str, cursor):
     cursor.execute('SELECT id FROM Geo JOIN County ON st_covers("geom"::geography, coordinates) WHERE "name"= %s LIMIT 1', (county_str))
     return cursor.fetchone()[0]
-
 
 def state_to_geo_id(state_str, cursor):
     cursor.execute('SELECT id FROM Geo JOIN County ON st_covers("geom"::geography, coordinates) WHERE "state_name"= %s LIMIT 1', (state_str))
     return cursor.fetchone()[0]
 
 
-def add_election_result(year, votes_dem, votes_gop, votes_other, county_geo_id, cursor):
+def add_election_result(year, votes_dem, votes_gop, votes_other, county_gid, cursor):
     cursor.execute('INSERT INTO ElectionResult '
                    + '(year, votesDem, votesGOP, votesOther, countyGeoID) '
                    + 'VALUES (%s, %s, %s, %s, %s)'
-                   , (year, votes_dem, votes_gop, votes_other, county_geo_id))
+                   , (year, votes_dem, votes_gop, votes_other, county_gid))
     # on conlifct do nothing?
 
 
 def add_election_results(row, cursor):
-    add_election_result(2016, row.votes_dem_2016, row.votes_gop_2016, row.votes_other_2016, county_to_geo_id(row.county))
-    add_election_result(2012, row.votes_dem_2012, row.votes_gop_2012, row.votes_other_2012, county_to_geo_id(row.county))
+    gid = gid_from_fips(row.fips, cursor)
+    add_election_result(2016, row.votes_dem_2016, row.votes_gop_2016, row.votes_other_2016, gid, cursor)
+    add_election_result(2012, row.votes_dem_2012, row.votes_gop_2012, row.votes_other_2012, gid, cursor)
 
 
 # the underlying cause of death file contains
@@ -265,7 +269,8 @@ def add_election_results(row, cursor):
 
 class UnderlyingCauseOfDeathRow:
     def __init__(self, row):
-        self.county = db_str(row[1].split(",")[0].splice())
+        #self.county = db_str(row[1].split(",")[0].splice())
+        self.fips = db_int(row[2])
         self.year = db_int(row[3])
         self.deaths = db_int(row[5])
         self.population = db_int(row[6])
@@ -282,8 +287,7 @@ def add_suicide_rate(year, population, deaths, crude_rate, age_adjusted_rate, co
 
 
 def add_suicide_rates(row, cursor):
-    geoID = county_to_geo_id(row.county)
-    add_suicide_rate(row.year, row.population, row.deaths, row.crude_rate, row.age_adjusted_rate, geoID, cursor)
+    add_suicide_rate(row.year, row.population, row.deaths, row.crude_rate, row.age_adjusted_rate, gid_from_fips(row.fips, cursor), cursor)
 
 
 #def add_state(state_str, cursor):
@@ -382,20 +386,6 @@ def add_event(row, cursor,
                   , (row.GlobalEventID, row.Day, action_id, actor1_id, actor2_id, action_geo_id, actor1_geo_id, actor2_geo_id,
                         row.AvgTone, row.NumMentions, row.NumSources, row.NumArticles))
 
-with open("./underlying_cause_of_death.txt") as data:
-    reader = csv.reader(data, delimiter = "\t")
-    limit = 1
-    for row in reader:
-        limit +=1
-        print(row)
-        if limit == 10:
-            break
-
-with open("../../counties/county_votes.csv") as data:
-    reader = csv.reader(delimiter = ",")
-    for row in map(CountyVotesRow, reader):
-        add_election_results(row, cursor)
-
 LEN = 163536
 for i in range(LEN):
 
@@ -420,6 +410,21 @@ for i in range(LEN):
         continue
 
     conn.commit()
+
+# TODO: run uscounties.sql
+# TODO: run add_counties.sql
+
+with open("./underlying_cause_of_death.txt") as data:
+    reader = csv.reader(data, delimiter = "\t")
+    for row in map(UnderlyingCauseOfDeathRow, reader):
+        add_suicide_rates(row, cursor)
+conn.commit()
+
+with open("../../counties/county_votes.csv") as data:
+    reader = csv.reader(delimiter = ",")
+    for row in map(CountyVotesRow, reader):
+        add_election_results(row, cursor)
+conn.commit()
 
 cursor.close()
 conn.close()
