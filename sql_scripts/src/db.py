@@ -1,7 +1,7 @@
 import psycopg2
 import csv
 import datetime
-from constants import COUNTY_TO_STATE, ABBR_TO_STATE, STATE_TO_ABBR
+#from constants import COUNTY_TO_STATE, ABBR_TO_STATE, STATE_TO_ABBR
 
 conn = psycopg2.connect(
 	host="localhost",
@@ -251,8 +251,37 @@ def add_election_results(row, cursor):
     add_election_result(2012, row.votes_dem_2012, row.votes_gop_2012, row.votes_other_2012, county_to_geo_id(row.county))
 
 
-class SuicideRate:
-    pass
+# the underlying cause of death file contains
+# 0. Notes (string)
+# 1. County, State abbr (string)
+# 2. County Code (string)
+# 3. year (int)
+# 4. YearCode (int)
+# 5. deaths (int)
+# 6. population (int)
+# 7. Crude rate (float)
+# 8. Age adjusted rate (float)
+
+class UnderlyingCauseOfDeathRow:
+    def __init__(self, row):
+        self.county = db_str(row[1].split(",")[0].splice())
+        self.year = db_int(row[3])
+        self.deaths = db_int(row[5])
+        self.population = db_int(row[6])
+        self.crude_rate = db_str(row[7])
+        self.age_adjusted_rate = db_str(row[8])
+
+
+def add_suicide_rate(year, population, deaths, crude_rate, age_adjusted_rate, county_geo_id, cursor):
+    cursor.execute('INSERT INTO SuicideRate '
+                   + '(year, "population", deaths, crudeRate, ageAdjustedRate, countyGeoID) '
+                   + 'VALUES '
+                   + '(%s, %s, %s, %s, %s, %s)', (year, population, deaths, crude_rate, age_adjusted_rate, county_geo_id))
+
+
+def add_suicide_rates(row, cursor):
+    geoID = county_to_geo_id(row.county)
+    add_suicide_rate(row.year, row.population, row.deaths, row.crude_rate, row.age_adjusted_rate, geoID, cursor)
 
 
 #def add_state(state_str, cursor):
@@ -350,6 +379,15 @@ def add_event(row, cursor,
                   + 'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);'
                   , (row.GlobalEventID, row.Day, action_id, actor1_id, actor2_id, action_geo_id, actor1_geo_id, actor2_geo_id,
                         row.AvgTone, row.NumMentions, row.NumSources, row.NumArticles))
+
+with open("./underlying_cause_of_death.txt") as data:
+    reader = csv.reader(data, delimiter = "\t")
+    limit = 1
+    for row in reader:
+        limit +=1
+        print(row)
+        if limit == 10:
+            break
 
 with open("../../counties/county_votes.csv") as data:
     reader = csv.reader(delimiter = ",")
