@@ -3,7 +3,7 @@ from datetime import datetime
 
 VERBOSE = True
 DESTINATION = "./files"
-LEN = 163536
+LEN = 89000
 
 os.mkdir(DESTINATION)
 data = open("files.txt", "r")

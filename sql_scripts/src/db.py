@@ -464,7 +464,7 @@ def main():
         cursor.execute("SET search_path TO suicide_schema")
 
     if do_all or '-gdelt' in sys.argv or '-g' in sys.argv:
-        LEN = 163536
+        LEN = 89000
         for i in range(LEN):
 
             filename = "../../gdelt/files/"  + str(i) + ".csv"
