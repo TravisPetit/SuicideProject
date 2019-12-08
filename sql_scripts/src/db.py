@@ -437,10 +437,13 @@ def main():
         with open("../../suicide/underlying_cause_of_death.txt") as data:
             skip1 = True
             reader = csv.reader(data, delimiter = "\t")
-            for row in map(UnderlyingCauseOfDeathRow, reader):
-                if skipme:
+            for row in reader:
+                if skip1:
+                    print("Skipping first line:")
+                    print(row)
                     skip1 = False
                     continue
+                row = UnderlyingCauseOfDeathRow(row)
                 add_suicide_rates(row, cursor)
         conn.commit()
 
