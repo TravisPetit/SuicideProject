@@ -34,10 +34,13 @@ def suicides_per_year_plot(cursor):
     plt.show()
 
 
-def create_percent_view(cursor):
+def create_percent_view(cursor, N):
+    """ N = number of counties """
+
     cursor.execute(
             'CREATE VIEW Percent (County, Protrump, suicide16, suicide17) AS \
-            SELECT "name", cast(votesGOP as decimal)/(votesGOP+votesDem+votesOther), \
+            SELECT distinct on ("name") "name", \
+            cast(votesGOP as decimal)/(votesGOP+votesDem+votesOther) as measure, \
             S16.deaths, S17.deaths \
             FROM County, ElectionResult, SuicideRate S16, SuicideRate S17 \
             WHERE \
@@ -45,14 +48,14 @@ def create_percent_view(cursor):
             AND S16.year = 2016 \
             AND S17.year = 2017 \
             AND S16.countyGeoID = ElectionResult.countyGeoID \
-            AND S17.countyGeoID = ElectionResult.countyGeoID;')
+            AND S17.countyGeoID = ElectionResult.countyGeoID ;')
+            #ORDER BY "name", measure;')
 
     cursor.execute(
-            'SELECT * FROM Percent ORDER BY Protrump LIMIT 10;')
+            'SELECT * FROM Percent ORDER BY Protrump LIMIT {};'.format(N))
     out = cursor.fetchall()
-    print(out)
 
-    x = [2*x for x in range(10)]
+    x = [2*x for x in range(N)]
 
     x2 = [i + 0.5 for i in x]
     x3 = [i + 0.25 for i in x]
@@ -75,10 +78,10 @@ def create_percent_view(cursor):
     ax.set_xlabel("counties with lowest GOP votes per capita")
     ax.set_ylabel("suicides")
 
-    plt.savefig("anti_trump_counties_suicides_2016_2017.png")
+    #plt.savefig("anti_trump_counties_suicides_2016_2017.png")
     plt.show()
 
 
-create_percent_view(cursor)
+create_percent_view(cursor,10)
 
 conn.close()
