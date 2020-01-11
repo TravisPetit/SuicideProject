@@ -137,5 +137,6 @@ create_percent_view(cursor)
 plot_county_suicides_2016_2017(cursor,N, False)
 plot_county_suicides_2016_2017(cursor,N, True)
 plot_pie(cursor, 100)
+suicides_per_year_plot(cursor)
 
 conn.close()
